@@ -1,15 +1,9 @@
+// src/utils.js
 export function createPageUrl(pageName) {
-  const map = {
-    Dashboard: '/',
-    Transactions: '/transactions',
-    Bills: '/bills',
-    Charts: '/charts',
-    Insights: '/insights',
-    Forecast: '/forecast',
-    Cards: '/cards',
-    Investments: '/investments',
-    Loans: '/loans',
-    Fuel: '/fuel',
-  };
-  return map[pageName] ?? '/';
+  // Mantém um padrão simples: "/dashboard", "/transactions", etc.
+  // Se vier com barra no começo, não duplica
+  if (!pageName) return "/";
+  const p = String(pageName).trim();
+  if (p === "Dashboard") return "/";
+  return "/" + p.toLowerCase();
 }
