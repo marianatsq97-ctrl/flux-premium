@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./components/Layout.jsx";
+import Layout from "./layout/Layout.jsx";
 import Home from "./pages/Home.jsx";
 
 export default function App() {
