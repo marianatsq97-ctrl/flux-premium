@@ -2,7 +2,6 @@ import { Outlet, Link } from "react-router-dom";
 
 export default function Layout() {
   const logoSrc = `${import.meta.env.BASE_URL}logo-flux.png`;
-
   return (
     <div style={{ minHeight: "100vh" }}>
       <header
