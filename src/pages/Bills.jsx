@@ -38,7 +38,7 @@ export default function Bills() {
     e.preventDefault();
     if (!name.trim()) return;
 
-    setDB((prev) => {
+    setDB(prev => {
       const next = structuredClone(prev);
       addAccount(next, { name, type });
       return next;
@@ -48,7 +48,7 @@ export default function Bills() {
   }
 
   function remove(id) {
-    setDB((prev) => {
+    setDB(prev => {
       const next = structuredClone(prev);
       delAccount(next, id);
       return next;
@@ -61,24 +61,17 @@ export default function Bills() {
       <div style={{ opacity: 0.75 }}>Bancos/carteiras. Base pra saldo e relatórios.</div>
 
       <form onSubmit={add} style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
-        <input
-          style={{ ...input, flex: "1 1 260px" }}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Nome da conta"
-        />
-        <select style={input} value={type} onChange={(e) => setType(e.target.value)}>
+        <input style={{...input, flex: "1 1 260px"}} value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nome da conta" />
+        <select style={input} value={type} onChange={(e)=>setType(e.target.value)}>
           <option>Banco</option>
           <option>Dinheiro</option>
           <option>Investimento</option>
         </select>
-        <button style={btn} type="submit">
-          Adicionar
-        </button>
+        <button style={btn} type="submit">Adicionar</button>
       </form>
 
       <div style={{ marginTop: 16, display: "grid", gap: 10 }}>
-        {(db.accounts || []).map((a) => (
+        {(db.accounts || []).map(a => (
           <div
             key={a.id}
             style={{
@@ -95,12 +88,7 @@ export default function Bills() {
               <div style={{ fontWeight: 900 }}>{a.name}</div>
               <div style={{ fontSize: 12, opacity: 0.7 }}>{a.type}</div>
             </div>
-
-            <button
-              style={{ ...btn, padding: "8px 10px", background: "rgba(255,0,0,0.12)" }}
-              onClick={() => remove(a.id)}
-              type="button"
-            >
+            <button style={{...btn, padding:"8px 10px", background:"rgba(255,0,0,0.12)"}} onClick={()=>remove(a.id)} type="button">
               X
             </button>
           </div>

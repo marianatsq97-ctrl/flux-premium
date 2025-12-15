@@ -49,7 +49,7 @@ export default function Layout() {
     padding: "14px 14px",
     borderRadius: 14,
     textDecoration: "none",
-    fontWeight: 700,
+    fontWeight: 800,
     color: "rgba(255,255,255,0.92)",
     background: isActive ? "rgba(255,255,255,0.10)" : "transparent",
     border: isActive ? "1px solid rgba(255,255,255,0.10)" : "1px solid transparent",
@@ -86,7 +86,7 @@ export default function Layout() {
         <NavLink to="/charts" style={linkStyle}>Gráficos</NavLink>
 
         <div style={{ marginTop: 18, fontSize: 12, opacity: 0.55 }}>
-          Dica: tudo que você subir no Git, o Pages atualiza sozinho.
+          Dica: subiu no Git, o Pages atualiza sozinho.
         </div>
       </aside>
 

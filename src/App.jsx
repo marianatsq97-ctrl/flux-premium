@@ -16,7 +16,6 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* SEM Home: raiz vai pro Dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         <Route path="/dashboard" element={<Dashboard />} />
@@ -32,7 +31,6 @@ export default function App() {
         <Route path="/forecast" element={<Forecast />} />
         <Route path="/charts" element={<Charts />} />
 
-        {/* fallback */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>

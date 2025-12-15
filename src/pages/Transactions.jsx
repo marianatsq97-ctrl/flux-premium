@@ -44,22 +44,21 @@ export default function Transactions() {
 
   function submit(e) {
     e.preventDefault();
-
     const amount = Number(String(form.amount).replace(",", "."));
     if (!form.description.trim()) return alert("Coloca uma descrição.");
     if (!amount || amount <= 0) return alert("Valor inválido.");
 
-    setDB((prev) => {
+    setDB(prev => {
       const next = structuredClone(prev);
       addTx(next, { ...form, amount });
       return next;
     });
 
-    setForm((f) => ({ ...f, description: "", amount: "" }));
+    setForm(f => ({ ...f, description: "", amount: "" }));
   }
 
   function remove(id) {
-    setDB((prev) => {
+    setDB(prev => {
       const next = structuredClone(prev);
       delTx(next, id);
       return next;
@@ -73,62 +72,24 @@ export default function Transactions() {
 
       <form
         onSubmit={submit}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "160px 160px 1fr 200px 160px",
-          gap: 10,
-          marginTop: 16,
-        }}
+        style={{ display: "grid", gridTemplateColumns: "160px 160px 1fr 200px 160px", gap: 10, marginTop: 16 }}
       >
-        <input
-          style={input}
-          type="date"
-          value={form.date}
-          onChange={(e) => setForm({ ...form, date: e.target.value })}
-        />
-
-        <select
-          style={input}
-          value={form.type}
-          onChange={(e) => setForm({ ...form, type: e.target.value })}
-        >
+        <input style={input} type="date" value={form.date} onChange={(e)=>setForm({...form, date:e.target.value})} />
+        <select style={input} value={form.type} onChange={(e)=>setForm({...form, type:e.target.value})}>
           <option value="expense">Saída</option>
           <option value="income">Entrada</option>
         </select>
-
-        <input
-          style={input}
-          placeholder="Descrição"
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-        />
-
-        <select
-          style={input}
-          value={form.category}
-          onChange={(e) => setForm({ ...form, category: e.target.value })}
-        >
-          {(db.categories || []).map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
+        <input style={input} placeholder="Descrição" value={form.description} onChange={(e)=>setForm({...form, description:e.target.value})} />
+        <select style={input} value={form.category} onChange={(e)=>setForm({...form, category:e.target.value})}>
+          {(db.categories || []).map(c => <option key={c} value={c}>{c}</option>)}
         </select>
+        <input style={input} placeholder="Valor (ex: 120,50)" value={form.amount} onChange={(e)=>setForm({...form, amount:e.target.value})} />
 
-        <input
-          style={input}
-          placeholder="Valor (ex: 120,50)"
-          value={form.amount}
-          onChange={(e) => setForm({ ...form, amount: e.target.value })}
-        />
-
-        <button style={{ ...btn, gridColumn: "1 / -1" }} type="submit">
-          Adicionar
-        </button>
+        <button style={{ ...btn, gridColumn: "1 / -1" }} type="submit">Adicionar</button>
       </form>
 
       <div style={{ marginTop: 18, display: "grid", gap: 10 }}>
-        {list.map((t) => (
+        {list.map(t => (
           <div
             key={t.id}
             style={{
@@ -147,7 +108,6 @@ export default function Transactions() {
             <div style={{ fontWeight: 800 }}>{t.description}</div>
             <div style={{ opacity: 0.8 }}>{t.category}</div>
             <div style={{ fontWeight: 900 }}>{brl(t.amount)}</div>
-
             <button
               style={{ ...btn, padding: "8px 10px", background: "rgba(255,0,0,0.12)" }}
               type="button"

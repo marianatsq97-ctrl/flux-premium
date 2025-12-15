@@ -39,9 +39,10 @@ export default function Investments() {
   function add(e) {
     e.preventDefault();
     const v = Number(String(amount).replace(",", "."));
+    if (!inv) return alert("Sem investimento base no seed.");
     if (!v || v <= 0) return;
 
-    setDB((prev) => {
+    setDB(prev => {
       const next = structuredClone(prev);
       addInvestmentMove(next, { investmentId: inv.id, date, amount: v });
       return next;
@@ -53,18 +54,16 @@ export default function Investments() {
   return (
     <div style={card}>
       <div style={{ fontSize: 40, fontWeight: 900 }}>Investimentos</div>
-      <div style={{ opacity: 0.75 }}>Aportes simples + saldo (sem firula por enquanto).</div>
+      <div style={{ opacity: 0.75 }}>Aportes simples + saldo.</div>
 
       <div style={{ marginTop: 14, fontWeight: 900 }}>
         {inv?.name} • Saldo: {brl(inv?.balance)}
       </div>
 
       <form onSubmit={add} style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
-        <input style={input} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <input style={input} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Aporte (ex: 200,00)" />
-        <button style={btn} type="submit">
-          Adicionar aporte
-        </button>
+        <input style={input} type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
+        <input style={input} value={amount} onChange={(e)=>setAmount(e.target.value)} placeholder="Aporte (ex: 200,00)" />
+        <button style={btn} type="submit">Adicionar aporte</button>
       </form>
     </div>
   );

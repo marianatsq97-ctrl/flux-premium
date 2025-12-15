@@ -15,10 +15,10 @@ export default function Loans() {
   return (
     <div style={card}>
       <div style={{ fontSize: 40, fontWeight: 900 }}>Empréstimos</div>
-      <div style={{ opacity: 0.75 }}>Base montada. Depois a gente coloca tabela/parcelas.</div>
+      <div style={{ opacity: 0.75 }}>Base montada. Depois vira painel de parcelas.</div>
 
       <div style={{ marginTop: 16, display: "grid", gap: 10 }}>
-        {(db.loans || []).map((l) => (
+        {(db.loans || []).map(l => (
           <div
             key={l.id}
             style={{

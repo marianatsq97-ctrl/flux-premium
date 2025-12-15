@@ -40,21 +40,19 @@ export default function Fuel() {
     e.preventDefault();
     const l = Number(String(liters).replace(",", "."));
     const t = Number(String(total).replace(",", "."));
-    if (!l || !t) return;
+    if (!l || !t) return alert("Litros e Total obrigatórios.");
 
-    setDB((prev) => {
+    setDB(prev => {
       const next = structuredClone(prev);
       addFuelLog(next, { date, liters: l, total: t, note });
       return next;
     });
 
-    setLiters("");
-    setTotal("");
-    setNote("");
+    setLiters(""); setTotal(""); setNote("");
   }
 
   function remove(id) {
-    setDB((prev) => {
+    setDB(prev => {
       const next = structuredClone(prev);
       delFuelLog(next, id);
       return next;
@@ -68,24 +66,17 @@ export default function Fuel() {
 
       <form
         onSubmit={add}
-        style={{
-          display: "grid",
-          gridTemplateColumns: "160px 160px 160px 1fr 160px",
-          gap: 10,
-          marginTop: 16,
-        }}
+        style={{ display: "grid", gridTemplateColumns: "160px 160px 160px 1fr 160px", gap: 10, marginTop: 16 }}
       >
-        <input style={input} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <input style={input} value={liters} onChange={(e) => setLiters(e.target.value)} placeholder="Litros" />
-        <input style={input} value={total} onChange={(e) => setTotal(e.target.value)} placeholder="Total (R$)" />
-        <input style={input} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Obs (opcional)" />
-        <button style={btn} type="submit">
-          Adicionar
-        </button>
+        <input style={input} type="date" value={date} onChange={(e)=>setDate(e.target.value)} />
+        <input style={input} value={liters} onChange={(e)=>setLiters(e.target.value)} placeholder="Litros" />
+        <input style={input} value={total} onChange={(e)=>setTotal(e.target.value)} placeholder="Total (R$)" />
+        <input style={input} value={note} onChange={(e)=>setNote(e.target.value)} placeholder="Obs (opcional)" />
+        <button style={btn} type="submit">Adicionar</button>
       </form>
 
       <div style={{ marginTop: 16, display: "grid", gap: 10 }}>
-        {(db.fuel?.logs || []).map((l) => (
+        {(db.fuel?.logs || []).map(l => (
           <div
             key={l.id}
             style={{
@@ -104,9 +95,9 @@ export default function Fuel() {
             <div style={{ fontWeight: 900 }}>{brl(l.total)}</div>
             <div style={{ opacity: 0.75 }}>{l.note}</div>
             <button
-              style={{ ...btn, padding: "8px 10px", background: "rgba(255,0,0,0.12)" }}
+              style={{...btn, padding:"8px 10px", background:"rgba(255,0,0,0.12)"}}
               type="button"
-              onClick={() => remove(l.id)}
+              onClick={()=>remove(l.id)}
             >
               X
             </button>
