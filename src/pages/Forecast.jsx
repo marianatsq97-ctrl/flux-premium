@@ -1,10 +1,18 @@
-import React from "react";
-
 export default function Forecast() {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-      <h1 className="text-2xl font-bold text-white">Previsão</h1>
-      <p className="text-slate-400 mt-2">Página em construção.</p>
+    <div
+      style={{
+        padding: 18,
+        borderRadius: 18,
+        background: "rgba(255,255,255,0.06)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        maxWidth: 1100,
+      }}
+    >
+      <div style={{ fontSize: 40, fontWeight: 900 }}>Previsões</div>
+      <div style={{ opacity: 0.75, marginTop: 8 }}>
+        Aqui vai: projeção de saldo, fixos do mês, cenário.
+      </div>
     </div>
   );
 }

@@ -16,24 +16,24 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        {/* Nada de Home: raiz joga pro dashboard */}
-        <Route index element={<Navigate to="dashboard" replace />} />
+        {/* SEM Home: raiz vai pro Dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="transactions" element={<Transactions />} />
-        <Route path="bills" element={<Bills />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/transactions" element={<Transactions />} />
+        <Route path="/bills" element={<Bills />} />
 
-        <Route path="investments" element={<Investments />} />
-        <Route path="fuel" element={<Fuel />} />
-        <Route path="loans" element={<Loans />} />
-        <Route path="cards" element={<Cards />} />
+        <Route path="/investments" element={<Investments />} />
+        <Route path="/fuel" element={<Fuel />} />
+        <Route path="/loans" element={<Loans />} />
+        <Route path="/cards" element={<Cards />} />
 
-        <Route path="insights" element={<Insights />} />
-        <Route path="forecast" element={<Forecast />} />
-        <Route path="charts" element={<Charts />} />
+        <Route path="/insights" element={<Insights />} />
+        <Route path="/forecast" element={<Forecast />} />
+        <Route path="/charts" element={<Charts />} />
 
-        {/* Qualquer rota doida volta pro dashboard */}
-        <Route path="*" element={<Navigate to="dashboard" replace />} />
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>
     </Routes>
   );
