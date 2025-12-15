@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDB } from "../store/DBContext.jsx";
-import { addAccount, delAccount } from "../store/db";
+import { addAccount, delAccount, brl, calcAccountBalances, cloneDB } from "../store/db";
 
 export default function Bills() {
   const { db, setDB } = useDB();
   const [name, setName] = useState("");
   const [type, setType] = useState("Banco");
+
+  const balances = useMemo(() => calcAccountBalances(db), [db]);
 
   const card = {
     padding: 18,
@@ -39,8 +41,8 @@ export default function Bills() {
     if (!name.trim()) return;
 
     setDB(prev => {
-      const next = structuredClone(prev);
-      addAccount(next, { name, type });
+      const next = cloneDB(prev);
+      addAccount(next, { name: name.trim(), type });
       return next;
     });
 
@@ -49,7 +51,7 @@ export default function Bills() {
 
   function remove(id) {
     setDB(prev => {
-      const next = structuredClone(prev);
+      const next = cloneDB(prev);
       delAccount(next, id);
       return next;
     });
@@ -58,7 +60,7 @@ export default function Bills() {
   return (
     <div style={card}>
       <div style={{ fontSize: 40, fontWeight: 900 }}>Contas</div>
-      <div style={{ opacity: 0.75 }}>Bancos/carteiras. Base pra saldo e relatórios.</div>
+      <div style={{ opacity: 0.75 }}>Saldo real calculado pelas transações.</div>
 
       <form onSubmit={add} style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
         <input style={{...input, flex: "1 1 260px"}} value={name} onChange={(e)=>setName(e.target.value)} placeholder="Nome da conta" />
@@ -72,23 +74,28 @@ export default function Bills() {
 
       <div style={{ marginTop: 16, display: "grid", gap: 10 }}>
         {(db.accounts || []).map(a => (
-          <div
-            key={a.id}
-            style={{
-              padding: 12,
-              borderRadius: 14,
-              background: "rgba(0,0,0,0.22)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
+          <div key={a.id} style={{
+            padding: 12,
+            borderRadius: 14,
+            background: "rgba(0,0,0,0.22)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12
+          }}>
             <div>
               <div style={{ fontWeight: 900 }}>{a.name}</div>
               <div style={{ fontSize: 12, opacity: 0.7 }}>{a.type}</div>
+              <div style={{ marginTop: 6, fontWeight: 900 }}>
+                Saldo: {brl(balances[a.id] || 0)}
+              </div>
             </div>
-            <button style={{...btn, padding:"8px 10px", background:"rgba(255,0,0,0.12)"}} onClick={()=>remove(a.id)} type="button">
+            <button
+              style={{...btn, padding:"8px 10px", background:"rgba(255,0,0,0.12)"}}
+              onClick={()=>remove(a.id)}
+              type="button"
+            >
               X
             </button>
           </div>

@@ -1,10 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useDB } from "../store/DBContext.jsx";
 import { brl, sumMonth, ymNow } from "../store/db";
 
 export default function Dashboard() {
   const { db } = useDB();
-  const ym = ymNow();
+  const [ym, setYm] = useState(ymNow());
   const s = useMemo(() => sumMonth(db, ym), [db, ym]);
 
   const card = {
@@ -32,8 +32,26 @@ export default function Dashboard() {
 
   return (
     <div style={card}>
-      <div style={{ fontSize: 46, fontWeight: 900 }}>Dashboard</div>
-      <div style={{ opacity: 0.75 }}>Resumo do mês <b>{ym}</b> • {s.count} lançamentos</div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 46, fontWeight: 900 }}>Dashboard</div>
+          <div style={{ opacity: 0.75 }}>Resumo do mês • {s.count} lançamentos</div>
+        </div>
+
+        <input
+          type="month"
+          value={ym}
+          onChange={(e) => setYm(e.target.value)}
+          style={{
+            padding: "10px 12px",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "rgba(0,0,0,0.25)",
+            color: "rgba(255,255,255,0.92)",
+            outline: "none",
+          }}
+        />
+      </div>
 
       <div style={row}>
         {box("Entradas", brl(s.income))}

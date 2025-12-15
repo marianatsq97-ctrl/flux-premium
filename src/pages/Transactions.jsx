@@ -1,19 +1,24 @@
 import { useMemo, useState } from "react";
 import { useDB } from "../store/DBContext.jsx";
-import { addTx, delTx, brl, todayISO } from "../store/db";
+import { addTx, delTx, brl, todayISO, ymNow, filterByMonth, cloneDB } from "../store/db";
 
 export default function Transactions() {
   const { db, setDB } = useDB();
+  const [ym, setYm] = useState(ymNow());
 
   const [form, setForm] = useState({
     date: todayISO(),
     type: "expense",
     description: "",
     category: "Outros",
+    accountId: "",
     amount: "",
   });
 
-  const list = useMemo(() => db.transactions || [], [db]);
+  const list = useMemo(() => {
+    const all = db.transactions || [];
+    return filterByMonth(all, ym);
+  }, [db, ym]);
 
   const card = {
     padding: 18,
@@ -49,8 +54,16 @@ export default function Transactions() {
     if (!amount || amount <= 0) return alert("Valor inválido.");
 
     setDB(prev => {
-      const next = structuredClone(prev);
-      addTx(next, { ...form, amount });
+      const next = cloneDB(prev);
+      addTx(next, {
+        date: form.date,
+        type: form.type,
+        description: form.description.trim(),
+        category: form.category,
+        accountId: form.accountId || null,
+        amount,
+        source: "manual"
+      });
       return next;
     });
 
@@ -59,7 +72,7 @@ export default function Transactions() {
 
   function remove(id) {
     setDB(prev => {
-      const next = structuredClone(prev);
+      const next = cloneDB(prev);
       delTx(next, id);
       return next;
     });
@@ -67,22 +80,49 @@ export default function Transactions() {
 
   return (
     <div style={card}>
-      <div style={{ fontSize: 40, fontWeight: 900 }}>Transações</div>
-      <div style={{ opacity: 0.75 }}>Aqui é onde o app vira “de verdade”.</div>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+        <div>
+          <div style={{ fontSize: 40, fontWeight: 900 }}>Transações</div>
+          <div style={{ opacity: 0.75 }}>Filtro por mês + conta = controle real.</div>
+        </div>
+
+        <input
+          type="month"
+          value={ym}
+          onChange={(e) => setYm(e.target.value)}
+          style={input}
+        />
+      </div>
 
       <form
         onSubmit={submit}
-        style={{ display: "grid", gridTemplateColumns: "160px 160px 1fr 200px 160px", gap: 10, marginTop: 16 }}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "160px 150px 1fr 190px 220px 160px",
+          gap: 10,
+          marginTop: 16
+        }}
       >
         <input style={input} type="date" value={form.date} onChange={(e)=>setForm({...form, date:e.target.value})} />
+
         <select style={input} value={form.type} onChange={(e)=>setForm({...form, type:e.target.value})}>
           <option value="expense">Saída</option>
           <option value="income">Entrada</option>
         </select>
+
         <input style={input} placeholder="Descrição" value={form.description} onChange={(e)=>setForm({...form, description:e.target.value})} />
+
         <select style={input} value={form.category} onChange={(e)=>setForm({...form, category:e.target.value})}>
           {(db.categories || []).map(c => <option key={c} value={c}>{c}</option>)}
         </select>
+
+        <select style={input} value={form.accountId} onChange={(e)=>setForm({...form, accountId:e.target.value})}>
+          <option value="">Sem conta</option>
+          {(db.accounts || []).map(a => (
+            <option key={a.id} value={a.id}>{a.name} ({a.type})</option>
+          ))}
+        </select>
+
         <input style={input} placeholder="Valor (ex: 120,50)" value={form.amount} onChange={(e)=>setForm({...form, amount:e.target.value})} />
 
         <button style={{ ...btn, gridColumn: "1 / -1" }} type="submit">Adicionar</button>
@@ -90,28 +130,28 @@ export default function Transactions() {
 
       <div style={{ marginTop: 18, display: "grid", gap: 10 }}>
         {list.map(t => (
-          <div
-            key={t.id}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "120px 90px 1fr 180px 140px 90px",
-              gap: 10,
-              alignItems: "center",
-              padding: 12,
-              borderRadius: 14,
-              background: "rgba(0,0,0,0.22)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
-          >
+          <div key={t.id} style={{
+            display: "grid",
+            gridTemplateColumns: "120px 70px 1fr 160px 1fr 140px 90px",
+            gap: 10,
+            alignItems: "center",
+            padding: 12,
+            borderRadius: 14,
+            background: "rgba(0,0,0,0.22)",
+            border: "1px solid rgba(255,255,255,0.08)",
+          }}>
             <div style={{ opacity: 0.8 }}>{t.date}</div>
             <div style={{ fontWeight: 900 }}>{t.type === "income" ? "ENT" : "SAI"}</div>
             <div style={{ fontWeight: 800 }}>{t.description}</div>
             <div style={{ opacity: 0.8 }}>{t.category}</div>
+            <div style={{ opacity: 0.75 }}>
+              {t.accountId ? (db.accounts || []).find(a=>a.id===t.accountId)?.name : "—"}
+            </div>
             <div style={{ fontWeight: 900 }}>{brl(t.amount)}</div>
             <button
               style={{ ...btn, padding: "8px 10px", background: "rgba(255,0,0,0.12)" }}
               type="button"
-              onClick={() => remove(t.id)}
+              onClick={()=>remove(t.id)}
             >
               X
             </button>

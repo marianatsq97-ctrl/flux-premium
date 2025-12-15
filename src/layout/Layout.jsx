@@ -65,7 +65,7 @@ export default function Layout() {
           <img src={logoSrc} alt="Flux Premium" style={{ height: 34, width: 34 }} />
           <div>
             <div style={{ fontWeight: 900 }}>Flux Premium</div>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>financeiro • controle • visão</div>
+            <div style={{ fontSize: 12, opacity: 0.7 }}>controle • visão • paz</div>
           </div>
         </div>
 
@@ -73,12 +73,15 @@ export default function Layout() {
         <NavLink to="/dashboard" style={linkStyle}>Dashboard</NavLink>
         <NavLink to="/transactions" style={linkStyle}>Transações</NavLink>
         <NavLink to="/bills" style={linkStyle}>Contas</NavLink>
+        <NavLink to="/cards" style={linkStyle}>Cartões</NavLink>
+
+        <div style={sectionTitle}>Ferramentas</div>
+        <NavLink to="/backup" style={linkStyle}>Backup / Restore</NavLink>
 
         <div style={sectionTitle}>Módulos</div>
         <NavLink to="/investments" style={linkStyle}>Investimentos</NavLink>
         <NavLink to="/fuel" style={linkStyle}>Combustível</NavLink>
         <NavLink to="/loans" style={linkStyle}>Empréstimos</NavLink>
-        <NavLink to="/cards" style={linkStyle}>Cartões</NavLink>
 
         <div style={sectionTitle}>Análises</div>
         <NavLink to="/insights" style={linkStyle}>Insights</NavLink>
@@ -86,13 +89,13 @@ export default function Layout() {
         <NavLink to="/charts" style={linkStyle}>Gráficos</NavLink>
 
         <div style={{ marginTop: 18, fontSize: 12, opacity: 0.55 }}>
-          Dica: subiu no Git, o Pages atualiza sozinho.
+          Tudo que você subir no Git, o Pages atualiza.
         </div>
       </aside>
 
       <section style={content}>
         <header style={header}>
-          <div style={{ fontWeight: 800 }}>Flux Premium</div>
+          <div style={{ fontWeight: 900 }}>Flux Premium</div>
           <div style={{ fontSize: 12, opacity: 0.75 }}>GitHub Pages ready ✅</div>
         </header>
 

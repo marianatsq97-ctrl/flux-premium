@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDB } from "../store/DBContext.jsx";
-import { addInvestmentMove, brl, todayISO } from "../store/db";
+import { addInvestmentMove, brl, todayISO, cloneDB } from "../store/db";
 
 export default function Investments() {
   const { db, setDB } = useDB();
@@ -16,7 +16,6 @@ export default function Investments() {
     border: "1px solid rgba(255,255,255,0.10)",
     maxWidth: 1100,
   };
-
   const input = {
     padding: "10px 12px",
     borderRadius: 12,
@@ -25,7 +24,6 @@ export default function Investments() {
     color: "rgba(255,255,255,0.92)",
     outline: "none",
   };
-
   const btn = {
     padding: "10px 14px",
     borderRadius: 12,
@@ -39,11 +37,10 @@ export default function Investments() {
   function add(e) {
     e.preventDefault();
     const v = Number(String(amount).replace(",", "."));
-    if (!inv) return alert("Sem investimento base no seed.");
     if (!v || v <= 0) return;
 
     setDB(prev => {
-      const next = structuredClone(prev);
+      const next = cloneDB(prev);
       addInvestmentMove(next, { investmentId: inv.id, date, amount: v });
       return next;
     });
@@ -54,7 +51,7 @@ export default function Investments() {
   return (
     <div style={card}>
       <div style={{ fontSize: 40, fontWeight: 900 }}>Investimentos</div>
-      <div style={{ opacity: 0.75 }}>Aportes simples + saldo.</div>
+      <div style={{ opacity: 0.75 }}>Aporte simples. Depois vira módulo premium.</div>
 
       <div style={{ marginTop: 14, fontWeight: 900 }}>
         {inv?.name} • Saldo: {brl(inv?.balance)}

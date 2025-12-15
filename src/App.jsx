@@ -8,6 +8,7 @@ import Investments from "./pages/Investments.jsx";
 import Fuel from "./pages/Fuel.jsx";
 import Loans from "./pages/Loans.jsx";
 import Cards from "./pages/Cards.jsx";
+import Backup from "./pages/Backup.jsx";
 import Insights from "./pages/Insights.jsx";
 import Forecast from "./pages/Forecast.jsx";
 import Charts from "./pages/Charts.jsx";
@@ -21,11 +22,13 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/bills" element={<Bills />} />
+        <Route path="/cards" element={<Cards />} />
 
         <Route path="/investments" element={<Investments />} />
         <Route path="/fuel" element={<Fuel />} />
         <Route path="/loans" element={<Loans />} />
-        <Route path="/cards" element={<Cards />} />
+
+        <Route path="/backup" element={<Backup />} />
 
         <Route path="/insights" element={<Insights />} />
         <Route path="/forecast" element={<Forecast />} />

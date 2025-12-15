@@ -2,18 +2,44 @@ const KEY = "flux_premium_v1";
 
 const uid = () => Math.random().toString(16).slice(2) + Date.now().toString(16);
 
+export function cloneDB(obj) {
+  if (typeof structuredClone === "function") return structuredClone(obj);
+  return JSON.parse(JSON.stringify(obj));
+}
+
+export function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+export function ymNow() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+}
+export function monthKey(dateStr) {
+  return dateStr?.slice(0, 7);
+}
+export function filterByMonth(list, ym) {
+  return (list || []).filter(i => monthKey(i.date) === ym);
+}
+export function brl(n) {
+  return (Number(n)||0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 export function seed() {
   const now = new Date();
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const today = `${yyyy}-${mm}-${String(now.getDate()).padStart(2, "0")}`;
+  const today = todayISO();
 
   return {
-    meta: { version: 1 },
+    meta: {
+      version: 1,
+      importHashes: [] // guarda hashes pra evitar duplicados
+    },
 
     accounts: [
-      { id: uid(), name: "Nubank", type: "Banco", balance: 0 },
-      { id: uid(), name: "Carteira", type: "Dinheiro", balance: 0 },
+      { id: uid(), name: "Nubank", type: "Banco" },
+      { id: uid(), name: "Carteira", type: "Dinheiro" },
     ],
 
     categories: [
@@ -29,6 +55,7 @@ export function seed() {
         category: "Salário",
         accountId: null,
         amount: 5000,
+        source: "seed"
       },
       {
         id: uid(),
@@ -38,6 +65,7 @@ export function seed() {
         category: "Alimentação",
         accountId: null,
         amount: 180.5,
+        source: "seed"
       },
     ],
 
@@ -57,7 +85,9 @@ export function seed() {
 
     fuel: {
       pricePerLiter: 6.0,
-      logs: [{ id: uid(), date: today, liters: 20, total: 120, note: "Teste" }]
+      logs: [
+        { id: uid(), date: today, liters: 20, total: 120, note: "Teste" }
+      ]
     }
   };
 }
@@ -66,7 +96,18 @@ export function loadDB() {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) return seed();
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+
+    // migração leve caso falte campo
+    parsed.meta ||= { version: 1, importHashes: [] };
+    parsed.meta.importHashes ||= [];
+    parsed.accounts ||= [];
+    parsed.categories ||= [];
+    parsed.transactions ||= [];
+    parsed.cards ||= [];
+    parsed.cardPurchases ||= [];
+
+    return parsed;
   } catch {
     return seed();
   }
@@ -76,167 +117,93 @@ export function saveDB(db) {
   localStorage.setItem(KEY, JSON.stringify(db));
 }
 
-export function brl(n) {
-  return (Number(n)||0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+/* ========= HASH / DEDUPE ========= */
+export function hashRow(parts) {
+  const s = parts.map(p => String(p ?? "").trim().toLowerCase()).join("|");
+  // hash simples e estável
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (h << 5) - h + s.charCodeAt(i);
+    h |= 0;
+  }
+  return String(h);
+}
+export function hasImportHash(db, h) {
+  return (db.meta?.importHashes || []).includes(h);
+}
+export function registerImportHash(db, h) {
+  db.meta.importHashes ||= [];
+  db.meta.importHashes.unshift(h);
+  // limita pra não virar infinito
+  if (db.meta.importHashes.length > 20000) db.meta.importHashes.length = 20000;
 }
 
-export function todayISO() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-
-export function ymNow() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-}
-
-export function monthKey(dateStr) {
-  return dateStr?.slice(0, 7);
-}
-
+/* ========= MÉTRICAS ========= */
 export function sumMonth(db, yyyyMm) {
-  const list = (db.transactions || []).filter(t => monthKey(t.date) === yyyyMm);
+  const list = filterByMonth(db.transactions || [], yyyyMm);
   const income = list.filter(t => t.type === "income").reduce((a,b)=>a + Number(b.amount||0), 0);
   const expense = list.filter(t => t.type === "expense").reduce((a,b)=>a + Number(b.amount||0), 0);
   return { income, expense, net: income - expense, count: list.length };
 }
 
-/* ===== CRUD ===== */
+export function calcAccountBalances(db) {
+  const map = {};
+  (db.accounts || []).forEach(a => { map[a.id] = 0; });
+
+  (db.transactions || []).forEach(t => {
+    if (!t.accountId) return;
+    const v = Number(t.amount || 0);
+    map[t.accountId] = (map[t.accountId] || 0) + (t.type === "income" ? v : -v);
+  });
+
+  return map;
+}
+
+/* ========= CRUD ========= */
 export function addTx(db, tx) {
+  db.transactions ||= [];
   db.transactions.unshift({ id: uid(), ...tx });
   return db;
 }
 export function delTx(db, id) {
-  db.transactions = db.transactions.filter(t => t.id !== id);
+  db.transactions = (db.transactions || []).filter(t => t.id !== id);
   return db;
 }
 
 export function addAccount(db, acc) {
-  db.accounts.push({ id: uid(), balance: 0, ...acc });
+  db.accounts ||= [];
+  db.accounts.push({ id: uid(), ...acc });
   return db;
 }
 export function delAccount(db, id) {
-  db.accounts = db.accounts.filter(a => a.id !== id);
+  db.accounts = (db.accounts || []).filter(a => a.id !== id);
+  // desvincula transações dessa conta
+  (db.transactions || []).forEach(t => { if (t.accountId === id) t.accountId = null; });
   return db;
 }
 
 export function addFuelLog(db, log) {
+  db.fuel ||= { pricePerLiter: 0, logs: [] };
+  db.fuel.logs ||= [];
   db.fuel.logs.unshift({ id: uid(), ...log });
   return db;
 }
 export function delFuelLog(db, id) {
-  db.fuel.logs = db.fuel.logs.filter(l => l.id !== id);
+  db.fuel.logs = (db.fuel?.logs || []).filter(l => l.id !== id);
   return db;
 }
 
 export function addInvestmentMove(db, move) {
+  db.investmentMoves ||= [];
   db.investmentMoves.unshift({ id: uid(), ...move });
-  const inv = db.investments.find(i => i.id === move.investmentId);
+
+  const inv = (db.investments || []).find(i => i.id === move.investmentId);
   if (inv) inv.balance = Number(inv.balance || 0) + Number(move.amount || 0);
   return db;
 }
 
 export function addCardPurchase(db, p) {
+  db.cardPurchases ||= [];
   db.cardPurchases.unshift({ id: uid(), ...p });
   return db;
-}
-
-/* ===== Helpers p/ Insights/Charts/Forecast ===== */
-function parseISO(dateStr) {
-  // dateStr: "YYYY-MM-DD"
-  const [y,m,d] = String(dateStr || "").split("-").map(Number);
-  if (!y || !m || !d) return null;
-  return new Date(y, m - 1, d);
-}
-
-export function daysInMonth(yyyyMm) {
-  const [y,m] = yyyyMm.split("-").map(Number);
-  return new Date(y, m, 0).getDate();
-}
-
-export function dayOfMonth(dateStr) {
-  const dt = parseISO(dateStr);
-  return dt ? dt.getDate() : null;
-}
-
-export function groupExpensesByCategory(db, yyyyMm) {
-  const list = (db.transactions || [])
-    .filter(t => monthKey(t.date) === yyyyMm && t.type === "expense");
-
-  const map = new Map();
-  for (const t of list) {
-    const c = t.category || "Outros";
-    map.set(c, (map.get(c) || 0) + Number(t.amount || 0));
-  }
-
-  const rows = Array.from(map.entries())
-    .map(([category, total]) => ({ category, total }))
-    .sort((a,b) => b.total - a.total);
-
-  const total = rows.reduce((a,b)=>a + b.total, 0);
-  return { rows, total };
-}
-
-export function dailyNetSeries(db, yyyyMm) {
-  const dmax = daysInMonth(yyyyMm);
-  const incomeByDay = Array(dmax).fill(0);
-  const expenseByDay = Array(dmax).fill(0);
-
-  for (const t of (db.transactions || [])) {
-    if (monthKey(t.date) !== yyyyMm) continue;
-    const day = dayOfMonth(t.date);
-    if (!day) continue;
-    const idx = day - 1;
-    const val = Number(t.amount || 0);
-    if (t.type === "income") incomeByDay[idx] += val;
-    if (t.type === "expense") expenseByDay[idx] += val;
-  }
-
-  const netByDay = incomeByDay.map((inc, i) => inc - expenseByDay[i]);
-  return { incomeByDay, expenseByDay, netByDay };
-}
-
-export function monthTotalsSeries(db, monthsBack = 6) {
-  // retorna últimos N meses (inclui mês atual)
-  const now = new Date();
-  const out = [];
-
-  for (let i = monthsBack - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-    const s = sumMonth(db, ym);
-    out.push({ ym, ...s });
-  }
-
-  return out;
-}
-
-export function forecastMonth(db, yyyyMm) {
-  // previsão simples: pega o que já rolou no mês e projeta pelo ritmo diário
-  const s = sumMonth(db, yyyyMm);
-  const dmax = daysInMonth(yyyyMm);
-
-  const today = new Date();
-  const ymToday = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}`;
-  const dayNow = (ymToday === yyyyMm) ? today.getDate() : dmax;
-
-  const daysPassed = Math.max(1, Math.min(dayNow, dmax));
-  const daysLeft = Math.max(0, dmax - daysPassed);
-
-  const avgIncomeDay = s.income / daysPassed;
-  const avgExpenseDay = s.expense / daysPassed;
-
-  const projIncome = s.income + avgIncomeDay * daysLeft;
-  const projExpense = s.expense + avgExpenseDay * daysLeft;
-
-  return {
-    daysPassed,
-    daysLeft,
-    avgIncomeDay,
-    avgExpenseDay,
-    projIncome,
-    projExpense,
-    projNet: projIncome - projExpense,
-    current: s
-  };
 }
